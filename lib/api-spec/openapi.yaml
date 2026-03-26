@@ -1,22 +1,23 @@
 openapi: 3.1.0
 info:
-  title: Api
-  version: 0.1.0
-  description: Conserje - API de Gestão Condominial
+  title: Conserje API
+  version: 2.0.0
+  description: Plataforma completa de gestão condominial
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
   - name: moradores
-    description: Gestão de moradores
   - name: encomendas
-    description: Gestão de encomendas
-  - name: logs
-    description: Logs de interação
+  - name: visitantes
+  - name: ocorrencias
+  - name: financeiro
+  - name: assembleias
+  - name: reservas
+  - name: juridico
   - name: alertas
-    description: Alertas DefCom
+  - name: dashboard
 
 paths:
   /healthz:
@@ -26,12 +27,30 @@ paths:
       summary: Health check
       responses:
         "200":
-          description: Healthy
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: object
+                properties:
+                  status:
+                    type: string
 
+  # ─── DASHBOARD ───────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: KPIs do dashboard principal
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  # ─── MORADORES ───────────────────────────────────────────────────────────────
   /moradores:
     get:
       operationId: listMoradores
@@ -40,47 +59,82 @@ paths:
       parameters:
         - name: apartamento
           in: query
-          schema:
-            type: string
+          schema: { type: string }
         - name: bloco
           in: query
-          schema:
-            type: string
+          schema: { type: string }
         - name: status
           in: query
-          schema:
-            type: string
+          schema: { type: string }
+        - name: q
+          in: query
+          schema: { type: string }
       responses:
         "200":
-          description: Lista de moradores
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Morador"
+    post:
+      operationId: createMorador
+      tags: [moradores]
+      summary: Criar morador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoradorInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Morador"
 
   /moradores/{id}:
     get:
       operationId: getMorador
       tags: [moradores]
-      summary: Buscar morador por ID
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       responses:
         "200":
-          description: Morador encontrado
+          description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Morador"
-        "404":
-          description: Morador não encontrado
+    patch:
+      operationId: updateMorador
+      tags: [moradores]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoradorInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Morador"
 
+  # ─── ENCOMENDAS ──────────────────────────────────────────────────────────────
   /encomendas:
     get:
       operationId: listEncomendas
@@ -89,167 +143,501 @@ paths:
       parameters:
         - name: apartamento
           in: query
-          schema:
-            type: string
+          schema: { type: string }
         - name: status_valido
           in: query
-          schema:
-            type: string
-        - name: data_inicio
+          schema: { type: string }
+        - name: plataforma
           in: query
-          schema:
-            type: string
-            format: date
-        - name: data_fim
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: morador_id
-          in: query
-          schema:
-            type: integer
+          schema: { type: string }
       responses:
         "200":
-          description: Lista de encomendas
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Encomenda"
+                  $ref: "#/components/schemas/EncomendaComMorador"
 
   /encomendas/{id}:
-    get:
-      operationId: getEncomenda
-      tags: [encomendas]
-      summary: Buscar encomenda por ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Encomenda encontrada
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Encomenda"
-        "404":
-          description: Encomenda não encontrada
     patch:
       operationId: updateEncomendaStatus
       tags: [encomendas]
-      summary: Atualizar status da encomenda
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateEncomendaStatus"
+              $ref: "#/components/schemas/EncomendaUpdate"
       responses:
         "200":
-          description: Status atualizado
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Encomenda"
-        "404":
-          description: Encomenda não encontrada
+                $ref: "#/components/schemas/EncomendaComMorador"
 
-  /logs:
+  # ─── VISITANTES ──────────────────────────────────────────────────────────────
+  /visitantes:
     get:
-      operationId: listLogs
-      tags: [logs]
-      summary: Listar logs de interação
+      operationId: listVisitantes
+      tags: [visitantes]
       parameters:
-        - name: morador_id
+        - name: tipo
           in: query
-          schema:
-            type: integer
-        - name: perfil_emocional
+          schema: { type: string }
+        - name: data
           in: query
-          schema:
-            type: string
-        - name: data_inicio
+          schema: { type: string }
+        - name: dentro
           in: query
-          schema:
-            type: string
-            format: date
-        - name: data_fim
-          in: query
-          schema:
-            type: string
-            format: date
+          schema: { type: boolean }
       responses:
         "200":
-          description: Lista de logs
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/LogInteracao"
+                  $ref: "#/components/schemas/Visitante"
+    post:
+      operationId: createVisitante
+      tags: [visitantes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisitanteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Visitante"
 
-  /logs/stats/perfil-emocional:
+  /visitantes/{id}/saida:
+    post:
+      operationId: registrarSaida
+      tags: [visitantes]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Visitante"
+
+  # ─── OCORRÊNCIAS ─────────────────────────────────────────────────────────────
+  /ocorrencias:
     get:
-      operationId: getPerfilEmocionalStats
-      tags: [logs]
-      summary: Estatísticas de perfil emocional
+      operationId: listOcorrencias
+      tags: [ocorrencias]
+      parameters:
+        - name: tipo
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: prioridade
+          in: query
+          schema: { type: string }
       responses:
         "200":
-          description: Distribuição de perfis emocionais
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PerfilEmocionalStat"
+                  $ref: "#/components/schemas/Ocorrencia"
+    post:
+      operationId: createOcorrencia
+      tags: [ocorrencias]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OcorrenciaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ocorrencia"
 
-  /logs/stats/acoes:
+  /ocorrencias/{id}:
+    patch:
+      operationId: updateOcorrencia
+      tags: [ocorrencias]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OcorrenciaInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ocorrencia"
+
+  # ─── FINANCEIRO ──────────────────────────────────────────────────────────────
+  /financeiro:
     get:
-      operationId: getAcoesStats
-      tags: [logs]
-      summary: Estatísticas de ações por dia
+      operationId: listFinanceiro
+      tags: [financeiro]
+      parameters:
+        - name: tipo
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: categoria
+          in: query
+          schema: { type: string }
+        - name: mes
+          in: query
+          schema: { type: string }
       responses:
         "200":
-          description: Ações por dia
+          description: OK
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AcoesStat"
+                  $ref: "#/components/schemas/Financeiro"
+    post:
+      operationId: createFinanceiro
+      tags: [financeiro]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinanceiroInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Financeiro"
 
+  /financeiro/{id}:
+    patch:
+      operationId: updateFinanceiro
+      tags: [financeiro]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinanceiroInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Financeiro"
+
+  /financeiro/resumo:
+    get:
+      operationId: getResumoFinanceiro
+      tags: [financeiro]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumoFinanceiro"
+
+  # ─── ASSEMBLEIAS ─────────────────────────────────────────────────────────────
+  /assembleias:
+    get:
+      operationId: listAssembleias
+      tags: [assembleias]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assembleia"
+    post:
+      operationId: createAssembleia
+      tags: [assembleias]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssembleiaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assembleia"
+
+  /assembleias/{id}:
+    get:
+      operationId: getAssembleia
+      tags: [assembleias]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssembleiaComVotacoes"
+    patch:
+      operationId: updateAssembleia
+      tags: [assembleias]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssembleiaInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assembleia"
+
+  # ─── RESERVAS ────────────────────────────────────────────────────────────────
+  /areas:
+    get:
+      operationId: listAreas
+      tags: [reservas]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Area"
+
+  /reservas:
+    get:
+      operationId: listReservas
+      tags: [reservas]
+      parameters:
+        - name: area_id
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: data
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservaComDetalhes"
+    post:
+      operationId: createReserva
+      tags: [reservas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservaComDetalhes"
+
+  /reservas/{id}:
+    patch:
+      operationId: updateReserva
+      tags: [reservas]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservaInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReservaComDetalhes"
+
+  # ─── JURÍDICO ────────────────────────────────────────────────────────────────
+  /juridico/documentos:
+    get:
+      operationId: listDocumentos
+      tags: [juridico]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Documento"
+    post:
+      operationId: createDocumento
+      tags: [juridico]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Documento"
+
+  /juridico/notificacoes:
+    get:
+      operationId: listNotificacoesJuridicas
+      tags: [juridico]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: tipo
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificacaoJuridica"
+    post:
+      operationId: createNotificacaoJuridica
+      tags: [juridico]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificacaoJuridicaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificacaoJuridica"
+
+  /juridico/notificacoes/{id}:
+    patch:
+      operationId: updateNotificacaoJuridica
+      tags: [juridico]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificacaoJuridicaInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificacaoJuridica"
+
+  # ─── ALERTAS ─────────────────────────────────────────────────────────────────
   /alertas:
     get:
       operationId: listAlertas
       tags: [alertas]
-      summary: Listar alertas DefCom
       parameters:
-        - name: nivel_risco
-          in: query
-          schema:
-            type: string
-        - name: tipo_ameaca
-          in: query
-          schema:
-            type: string
         - name: resolvido
           in: query
-          schema:
-            type: boolean
+          schema: { type: boolean }
       responses:
         "200":
-          description: Lista de alertas
+          description: OK
           content:
             application/json:
               schema:
@@ -258,229 +646,402 @@ paths:
                   $ref: "#/components/schemas/AlertaDefCom"
 
   /alertas/{id}:
-    get:
-      operationId: getAlerta
-      tags: [alertas]
-      summary: Buscar alerta por ID
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Alerta encontrado
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AlertaDefCom"
-        "404":
-          description: Alerta não encontrado
     patch:
       operationId: updateAlerta
       tags: [alertas]
-      summary: Atualizar alerta (arquivar ou acionar)
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: integer
+          schema: { type: integer }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateAlerta"
+              $ref: "#/components/schemas/AlertaUpdate"
       responses:
         "200":
-          description: Alerta atualizado
+          description: OK
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AlertaDefCom"
-        "404":
-          description: Alerta não encontrado
 
 components:
   schemas:
-    HealthStatus:
+    DashboardStats:
       type: object
+      required: [encomendas_pendentes, visitantes_dentro, ocorrencias_abertas, inadimplentes, proxima_assembleia, saldo_caixa, alertas_criticos]
       properties:
-        status:
-          type: string
-      required:
-        - status
+        encomendas_pendentes: { type: integer }
+        visitantes_dentro: { type: integer }
+        ocorrencias_abertas: { type: integer }
+        inadimplentes: { type: integer }
+        proxima_assembleia: { type: string, nullable: true }
+        saldo_caixa: { type: number }
+        alertas_criticos: { type: integer }
+        total_moradores: { type: integer }
+        reservas_hoje: { type: integer }
 
     Morador:
       type: object
+      required: [id, nome, apartamento, bloco, telefone, status, created_at]
       properties:
-        id:
-          type: integer
-        nome:
-          type: string
-        apartamento:
-          type: string
-        bloco:
-          type: string
-        telefone:
-          type: string
-        status:
-          type: string
-          enum: [ativo, inativo]
-        created_at:
-          type: string
-          format: date-time
-      required:
-        - id
-        - nome
-        - apartamento
-        - bloco
-        - telefone
-        - status
+        id: { type: integer }
+        nome: { type: string }
+        apartamento: { type: string }
+        bloco: { type: string }
+        telefone: { type: string }
+        email: { type: string, nullable: true }
+        cpf: { type: string, nullable: true }
+        veiculo_placa: { type: string, nullable: true }
+        foto_url: { type: string, nullable: true }
+        status: { type: string }
+        data_entrada: { type: string, nullable: true }
+        observacoes: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string, nullable: true }
 
-    Encomenda:
+    MoradorInput:
+      type: object
+      required: [nome, apartamento, bloco, telefone]
+      properties:
+        nome: { type: string }
+        apartamento: { type: string }
+        bloco: { type: string }
+        telefone: { type: string }
+        email: { type: string }
+        cpf: { type: string }
+        veiculo_placa: { type: string }
+        foto_url: { type: string }
+        status: { type: string }
+        observacoes: { type: string }
+
+    EncomendaComMorador:
+      type: object
+      required: [id, codigo_rastreio, morador_id, status_valido, data_recebimento]
+      properties:
+        id: { type: integer }
+        codigo_rastreio: { type: string }
+        morador_id: { type: integer }
+        status_valido: { type: string }
+        data_recebimento: { type: string }
+        foto_url: { type: string, nullable: true }
+        ocr_confianca: { type: number, nullable: true }
+        plataforma: { type: string, nullable: true }
+        descricao: { type: string, nullable: true }
+        retirado_por: { type: string, nullable: true }
+        data_retirada: { type: string, nullable: true }
+        morador_nome: { type: string, nullable: true }
+        morador_apartamento: { type: string, nullable: true }
+        morador_bloco: { type: string, nullable: true }
+        morador_telefone: { type: string, nullable: true }
+
+    EncomendaUpdate:
       type: object
       properties:
-        id:
-          type: integer
-        codigo_rastreio:
-          type: string
-        morador_id:
-          type: integer
-        morador_nome:
-          type: string
-        morador_apartamento:
-          type: string
-        morador_bloco:
-          type: string
-        status_valido:
-          type: string
-          enum: [pendente, notificado, retirado, extraviado]
-        data_recebimento:
-          type: string
-          format: date-time
-        foto_url:
-          type: string
-          nullable: true
-        ocr_confianca:
-          type: number
-          nullable: true
-      required:
-        - id
-        - codigo_rastreio
-        - morador_id
-        - status_valido
-        - data_recebimento
+        status_valido: { type: string }
+        retirado_por: { type: string }
+        observacoes: { type: string }
 
-    UpdateEncomendaStatus:
+    Visitante:
       type: object
+      required: [id, nome, destino_apartamento, destino_bloco, tipo, entrada, created_at]
       properties:
-        status_valido:
-          type: string
-          enum: [pendente, notificado, retirado, extraviado]
-      required:
-        - status_valido
+        id: { type: integer }
+        nome: { type: string }
+        documento: { type: string, nullable: true }
+        telefone: { type: string, nullable: true }
+        foto_url: { type: string, nullable: true }
+        destino_apartamento: { type: string }
+        destino_bloco: { type: string }
+        destino_morador: { type: string, nullable: true }
+        motivo: { type: string }
+        tipo: { type: string }
+        veiculo_placa: { type: string, nullable: true }
+        qr_code: { type: string, nullable: true }
+        entrada: { type: string }
+        saida: { type: string, nullable: true }
+        autorizado_por: { type: string, nullable: true }
+        observacoes: { type: string, nullable: true }
+        created_at: { type: string }
 
-    LogInteracao:
+    VisitanteInput:
       type: object
+      required: [nome, destino_apartamento, destino_bloco]
       properties:
-        id:
-          type: integer
-        morador_id:
-          type: integer
-        morador_nome:
-          type: string
-        morador_apartamento:
-          type: string
-        tipo_msg:
-          type: string
-          enum: [texto, imagem]
-        acao:
-          type: string
-        perfil_emocional:
-          type: string
-          enum: [neutro, colaborativo, estressado, revoltado, mal-intencionado, empolgado, passivo, frustrado, confuso]
-        resultado:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-      required:
-        - id
-        - morador_id
-        - tipo_msg
-        - acao
-        - perfil_emocional
-        - resultado
+        nome: { type: string }
+        documento: { type: string }
+        telefone: { type: string }
+        destino_apartamento: { type: string }
+        destino_bloco: { type: string }
+        destino_morador: { type: string }
+        motivo: { type: string }
+        tipo: { type: string }
+        veiculo_placa: { type: string }
+        autorizado_por: { type: string }
+        observacoes: { type: string }
 
-    PerfilEmocionalStat:
+    Ocorrencia:
       type: object
+      required: [id, titulo, descricao, tipo, prioridade, status, created_at]
       properties:
-        perfil_emocional:
-          type: string
-        count:
-          type: integer
-      required:
-        - perfil_emocional
-        - count
+        id: { type: integer }
+        titulo: { type: string }
+        descricao: { type: string }
+        tipo: { type: string }
+        prioridade: { type: string }
+        status: { type: string }
+        morador_id: { type: integer, nullable: true }
+        area: { type: string, nullable: true }
+        foto_url: { type: string, nullable: true }
+        prestador_responsavel: { type: string, nullable: true }
+        valor_servico: { type: string, nullable: true }
+        data_agendamento: { type: string, nullable: true }
+        data_conclusao: { type: string, nullable: true }
+        observacoes: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string, nullable: true }
 
-    AcoesStat:
+    OcorrenciaInput:
       type: object
+      required: [titulo, descricao]
       properties:
-        data:
-          type: string
-        total:
-          type: integer
-        textos:
-          type: integer
-        imagens:
-          type: integer
-      required:
-        - data
-        - total
-        - textos
-        - imagens
+        titulo: { type: string }
+        descricao: { type: string }
+        tipo: { type: string }
+        prioridade: { type: string }
+        status: { type: string }
+        morador_id: { type: integer }
+        area: { type: string }
+        prestador_responsavel: { type: string }
+        valor_servico: { type: string }
+        data_agendamento: { type: string }
+        observacoes: { type: string }
+
+    Financeiro:
+      type: object
+      required: [id, tipo, descricao, valor, categoria, status, created_at]
+      properties:
+        id: { type: integer }
+        tipo: { type: string }
+        descricao: { type: string }
+        valor: { type: number }
+        categoria: { type: string }
+        data_vencimento: { type: string, nullable: true }
+        data_pagamento: { type: string, nullable: true }
+        morador_id: { type: integer, nullable: true }
+        referencia_mes: { type: string, nullable: true }
+        status: { type: string }
+        comprovante_url: { type: string, nullable: true }
+        observacoes: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string, nullable: true }
+
+    FinanceiroInput:
+      type: object
+      required: [tipo, descricao, valor]
+      properties:
+        tipo: { type: string }
+        descricao: { type: string }
+        valor: { type: number }
+        categoria: { type: string }
+        data_vencimento: { type: string }
+        data_pagamento: { type: string }
+        morador_id: { type: integer }
+        referencia_mes: { type: string }
+        status: { type: string }
+        observacoes: { type: string }
+
+    ResumoFinanceiro:
+      type: object
+      required: [saldo, total_receitas, total_despesas, inadimplentes, a_vencer]
+      properties:
+        saldo: { type: number }
+        total_receitas: { type: number }
+        total_despesas: { type: number }
+        inadimplentes: { type: integer }
+        a_vencer: { type: integer }
+
+    Assembleia:
+      type: object
+      required: [id, titulo, tipo, data_realizacao, local, status, created_at]
+      properties:
+        id: { type: integer }
+        titulo: { type: string }
+        tipo: { type: string }
+        descricao: { type: string, nullable: true }
+        data_realizacao: { type: string }
+        local: { type: string }
+        link_reuniao: { type: string, nullable: true }
+        status: { type: string }
+        quorum_minimo: { type: integer, nullable: true }
+        presentes: { type: integer, nullable: true }
+        ata_url: { type: string, nullable: true }
+        ata_texto: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string, nullable: true }
+
+    AssembleiaComVotacoes:
+      allOf:
+        - $ref: "#/components/schemas/Assembleia"
+        - type: object
+          properties:
+            votacoes:
+              type: array
+              items:
+                $ref: "#/components/schemas/Votacao"
+
+    Votacao:
+      type: object
+      required: [id, assembleia_id, questao, status, created_at]
+      properties:
+        id: { type: integer }
+        assembleia_id: { type: integer }
+        questao: { type: string }
+        descricao: { type: string, nullable: true }
+        opcoes: { type: string }
+        votos_sim: { type: integer, nullable: true }
+        votos_nao: { type: integer, nullable: true }
+        votos_abstencao: { type: integer, nullable: true }
+        status: { type: string }
+        resultado: { type: string, nullable: true }
+        created_at: { type: string }
+
+    AssembleiaInput:
+      type: object
+      required: [titulo, data_realizacao]
+      properties:
+        titulo: { type: string }
+        tipo: { type: string }
+        descricao: { type: string }
+        data_realizacao: { type: string }
+        local: { type: string }
+        link_reuniao: { type: string }
+        status: { type: string }
+        quorum_minimo: { type: integer }
+        ata_texto: { type: string }
+
+    Area:
+      type: object
+      required: [id, nome, created_at]
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        descricao: { type: string, nullable: true }
+        capacidade: { type: integer, nullable: true }
+        valor_hora: { type: string, nullable: true }
+        foto_url: { type: string, nullable: true }
+        ativa: { type: boolean, nullable: true }
+        regras: { type: string, nullable: true }
+        created_at: { type: string }
+
+    ReservaComDetalhes:
+      type: object
+      required: [id, area_id, morador_id, data_inicio, data_fim, status, created_at]
+      properties:
+        id: { type: integer }
+        area_id: { type: integer }
+        morador_id: { type: integer }
+        data_inicio: { type: string }
+        data_fim: { type: string }
+        status: { type: string }
+        motivo: { type: string, nullable: true }
+        num_pessoas: { type: integer, nullable: true }
+        valor_cobrado: { type: string, nullable: true }
+        observacoes: { type: string, nullable: true }
+        area_nome: { type: string, nullable: true }
+        morador_nome: { type: string, nullable: true }
+        morador_apartamento: { type: string, nullable: true }
+        created_at: { type: string }
+
+    ReservaInput:
+      type: object
+      required: [area_id, morador_id, data_inicio, data_fim]
+      properties:
+        area_id: { type: integer }
+        morador_id: { type: integer }
+        data_inicio: { type: string }
+        data_fim: { type: string }
+        status: { type: string }
+        motivo: { type: string }
+        num_pessoas: { type: integer }
+        observacoes: { type: string }
+
+    Documento:
+      type: object
+      required: [id, titulo, tipo, vigente, created_at]
+      properties:
+        id: { type: integer }
+        titulo: { type: string }
+        tipo: { type: string }
+        descricao: { type: string, nullable: true }
+        arquivo_url: { type: string, nullable: true }
+        versao: { type: string, nullable: true }
+        vigente: { type: string }
+        created_at: { type: string }
+        updated_at: { type: string, nullable: true }
+
+    DocumentoInput:
+      type: object
+      required: [titulo]
+      properties:
+        titulo: { type: string }
+        tipo: { type: string }
+        descricao: { type: string }
+        arquivo_url: { type: string }
+        versao: { type: string }
+        vigente: { type: string }
+
+    NotificacaoJuridica:
+      type: object
+      required: [id, tipo, titulo, descricao, status, created_at]
+      properties:
+        id: { type: integer }
+        morador_id: { type: integer, nullable: true }
+        tipo: { type: string }
+        titulo: { type: string }
+        descricao: { type: string }
+        valor_multa: { type: number, nullable: true }
+        status: { type: string }
+        data_prazo: { type: string, nullable: true }
+        data_resolucao: { type: string, nullable: true }
+        artigo_regimento: { type: string, nullable: true }
+        comprovante_url: { type: string, nullable: true }
+        created_at: { type: string }
+        morador_nome: { type: string, nullable: true }
+        morador_apartamento: { type: string, nullable: true }
+
+    NotificacaoJuridicaInput:
+      type: object
+      required: [tipo, titulo, descricao]
+      properties:
+        morador_id: { type: integer }
+        tipo: { type: string }
+        titulo: { type: string }
+        descricao: { type: string }
+        valor_multa: { type: number }
+        status: { type: string }
+        data_prazo: { type: string }
+        artigo_regimento: { type: string }
 
     AlertaDefCom:
       type: object
+      required: [id, nivel_risco, tipo_ameaca, descricao, data_alerta, arquivado, autoridades_acionadas]
       properties:
-        id:
-          type: integer
-        nivel_risco:
-          type: string
-          enum: [baixo, medio, alto, critico]
-        tipo_ameaca:
-          type: string
-          enum: [violencia, criminalidade, emergencia, intimidacao]
-        descricao:
-          type: string
-        resolucao:
-          type: string
-          nullable: true
-        data_alerta:
-          type: string
-          format: date-time
-        arquivado:
-          type: boolean
-        autoridades_acionadas:
-          type: boolean
-      required:
-        - id
-        - nivel_risco
-        - tipo_ameaca
-        - descricao
-        - data_alerta
-        - arquivado
-        - autoridades_acionadas
+        id: { type: integer }
+        nivel_risco: { type: string }
+        tipo_ameaca: { type: string }
+        descricao: { type: string }
+        resolucao: { type: string, nullable: true }
+        data_alerta: { type: string }
+        arquivado: { type: boolean }
+        autoridades_acionadas: { type: boolean }
 
-    UpdateAlerta:
+    AlertaUpdate:
       type: object
       properties:
-        arquivado:
-          type: boolean
-        autoridades_acionadas:
-          type: boolean
-        resolucao:
-          type: string
+        arquivado: { type: boolean }
+        autoridades_acionadas: { type: boolean }
+        resolucao: { type: string }

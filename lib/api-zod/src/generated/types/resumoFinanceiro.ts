@@ -6,9 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type ListMoradoresParams = {
-  apartamento?: string;
-  bloco?: string;
-  status?: string;
-  q?: string;
-};
+export interface ResumoFinanceiro {
+  saldo: number;
+  total_receitas: number;
+  total_despesas: number;
+  inadimplentes: number;
+  a_vencer: number;
+}

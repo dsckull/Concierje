@@ -11,6 +11,11 @@ export const encomendasTable = pgTable("encomendas", {
   data_recebimento: timestamp("data_recebimento").defaultNow().notNull(),
   foto_url: text("foto_url"),
   ocr_confianca: real("ocr_confianca"),
+  plataforma: text("plataforma"),
+  descricao: text("descricao"),
+  retirado_por: text("retirado_por"),
+  data_retirada: timestamp("data_retirada"),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
 
 export const insertEncomendaSchema = createInsertSchema(encomendasTable).omit({ id: true });

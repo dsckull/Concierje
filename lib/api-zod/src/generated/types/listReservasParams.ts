@@ -6,9 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type ListMoradoresParams = {
-  apartamento?: string;
-  bloco?: string;
+export type ListReservasParams = {
+  area_id?: number;
   status?: string;
-  q?: string;
+  data?: string;
 };

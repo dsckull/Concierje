@@ -8,8 +8,15 @@ export const moradoresTable = pgTable("moradores", {
   apartamento: text("apartamento").notNull(),
   bloco: text("bloco").notNull(),
   telefone: text("telefone").notNull().unique(),
+  email: text("email"),
+  cpf: text("cpf"),
+  veiculo_placa: text("veiculo_placa"),
+  foto_url: text("foto_url"),
   status: text("status").notNull().default("ativo"),
+  data_entrada: timestamp("data_entrada"),
+  observacoes: text("observacoes"),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
 
 export const insertMoradorSchema = createInsertSchema(moradoresTable).omit({ id: true, created_at: true });
