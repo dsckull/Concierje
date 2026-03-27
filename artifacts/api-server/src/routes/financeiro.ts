@@ -1,9 +1,17 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { financeiroTable } from "@workspace/db";
+import { financeiroTable, insertFinanceiroSchema } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
+import { validate, validateId } from "../middleware/validate";
+import { z } from "zod";
 
 const router = Router();
+
+const updateFinanceiroSchema = z.object({
+  status: z.enum(["pendente", "pago", "vencido", "cancelado"]).optional(),
+  valor: z.number().positive().optional(),
+  descricao: z.string().max(500).optional(),
+});
 
 router.get("/financeiro/resumo", async (req, res) => {
   try {
@@ -32,22 +40,35 @@ router.get("/financeiro", async (req, res) => {
   }
 });
 
-router.post("/financeiro", async (req, res) => {
+router.post("/financeiro", validate(insertFinanceiroSchema), async (req, res) => {
   try {
-    const [row] = await db.insert(financeiroTable).values(req.body).returning();
+    const data = { ...req.body };
+    if (data.valor) data.valor = parseFloat(String(data.valor));
+    if (data.data_vencimento) data.data_vencimento = new Date(data.data_vencimento);
+    const [row] = await db.insert(financeiroTable).values(data).returning();
     res.status(201).json(row);
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    req.log?.error(err);
+    res.status(500).json({ error: "Erro ao criar lançamento" });
   }
 });
 
-router.patch("/financeiro/:id", async (req, res) => {
+router.patch("/financeiro/:id", validateId, validate(updateFinanceiroSchema), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const [row] = await db.update(financeiroTable).set({ ...req.body, updated_at: new Date() }).where(eq(financeiroTable.id, id)).returning();
+    const [row] = await db
+      .update(financeiroTable)
+      .set({ ...req.body, updated_at: new Date() })
+      .where(eq(financeiroTable.id, id))
+      .returning();
+    if (!row) {
+      res.status(404).json({ error: "Lançamento não encontrado" });
+      return;
+    }
     res.json(row);
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    req.log?.error(err);
+    res.status(500).json({ error: "Erro ao atualizar lançamento" });
   }
 });
 

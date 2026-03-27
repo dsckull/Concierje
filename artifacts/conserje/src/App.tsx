@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import DashboardPage from "@/pages/DashboardPage";
@@ -21,6 +22,7 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: 30000,
     },
   },
 });
@@ -28,19 +30,21 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <AppLayout>
-      <Switch>
-        <Route path="/" component={DashboardPage} />
-        <Route path="/moradores" component={MoradoresPage} />
-        <Route path="/encomendas" component={EncomendasPage} />
-        <Route path="/visitantes" component={VisitantesPage} />
-        <Route path="/ocorrencias" component={OcorrenciasPage} />
-        <Route path="/financeiro" component={FinanceiroPage} />
-        <Route path="/assembleias" component={AssembleiasPage} />
-        <Route path="/reservas" component={ReservasPage} />
-        <Route path="/juridico" component={JuridicoPage} />
-        <Route path="/defcom" component={DefComPage} />
-        <Route component={NotFound} />
-      </Switch>
+      <ErrorBoundary>
+        <Switch>
+          <Route path="/" component={DashboardPage} />
+          <Route path="/moradores" component={MoradoresPage} />
+          <Route path="/encomendas" component={EncomendasPage} />
+          <Route path="/visitantes" component={VisitantesPage} />
+          <Route path="/ocorrencias" component={OcorrenciasPage} />
+          <Route path="/financeiro" component={FinanceiroPage} />
+          <Route path="/assembleias" component={AssembleiasPage} />
+          <Route path="/reservas" component={ReservasPage} />
+          <Route path="/juridico" component={JuridicoPage} />
+          <Route path="/defcom" component={DefComPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </ErrorBoundary>
     </AppLayout>
   );
 }
