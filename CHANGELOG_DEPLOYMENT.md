@@ -9,6 +9,8 @@
 ## 📊 GIT COMMITS REGISTRADOS
 
 ```
+63d0b2e ← 🚀 fix(deploy): make PORT and BASE_PATH optional during build (Correction for Railway failure)
+9ee1315 ← 🚀 fix(deploy): stable docker build configs (Resolução Exit Code 1)
 848e4d4 ← 📊 Executive summary (visão geral)
 eb4799e ← 📝 Relatório técnico atualizado (seção 4)
 46c4199 ← 🧪 Script de validação (check-deployment.mjs)
@@ -16,12 +18,11 @@ eb4799e ← 📝 Relatório técnico atualizado (seção 4)
 151afbc ← 🌐 Frontend serving em Express (app.ts)
 dc8919c ← 🔐 Template de variáveis (.env.example)
 3e2ebf9 ← 🐳 Dockerfile multi-stage (infraestrutura)
-🚀 NEW  ← Prep for Production: Optimized Docker + Doc Updates (Sessão 8)
 ```
 
 **Branch**: main  
-**Commits não enviados**: 7  
-**Status**: Ready to push → `git push origin main`
+**Commits enviados**: 8 (Push Realizado com Sucesso)  
+**Status**: Deployed → `Em Nuvem (Railway)`
 
 ---
 

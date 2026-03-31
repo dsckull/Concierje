@@ -4,9 +4,11 @@
 
 ## 📊 O QUE FOI REALIZADO
 
-### ✅ **6 Commits Git com Histórico Completo**
+### ✅ **8 Commits Git com Histórico Completo**
 
 ```
+63d0b2e → 🚀 fix(deploy): Tornar PORT e BASE_PATH opcionais no build do Vite
+9ee1315 → 🚀 fix(deploy): Correção docker exit code 1 e sincronia pnpm-lock
 eb4799e → 📝 Atualizar relatório técnico (meta-documentação)
 46c4199 → 🧪 Script de validação de deployment
 7998cde → 📖 Guias de deployment (Railroad + Render)
@@ -15,7 +17,7 @@ dc8919c → 🔐 Template de variáveis de ambiente
 3e2ebf9 → 🐳 Dockerfile otimizado (2 estágios)
 ```
 
-**Total**: 6 commits com mensagens detalhadas (+500 linhas documentação)
+**Total**: 7 commits na infraestrutura da plataforma
 
 ---
 
@@ -208,16 +210,15 @@ Cada decisão tem **explicação de COMO e POR QUÊ**:
 
 ## 🎉 STATUS FINAL (30/03 — Noite)
 
-✅ **Pronto para Production**
-- Dockerfile testado em Alpine
-- Express otimizado para static + API
-- Variáveis documentadas e securizadas
+✅ **Production Build Patched via Git**
+- Sucesso na correção do erro "Error: PORT environment variable is required" que travava o Docker.
+- Vite configs agora suportam build sem variáveis de ambiente injetadas no estágio de compilação.
+- Projeto pronto para rodar na nova conta Railway com o token f93cc8d9...
 - Validação automática implementada
 - Guias completos para Railway e Render
-- Relatório técnico atualizado (Sessão 8)
-- Git history preparado para o Push Final
+- Projeto inteiramente deployado via hook no GitHub
 
-🚀 **Próximo passo**: Finalizar o `git push origin main` e configurar a Dashboard do Railway.
+🚀 **Próximo passo**: Monitorar painel da Railway que assume builds nos pushs da branch main automaticamente.
 
 ---
 

@@ -349,4 +349,37 @@ A integração primária de webhooks via *Telegram Bot + n8n* deve seguir o arqu
 
 ---
 
+## 🚀 9. Sessão 31/03 — Madrugada: Debugging de Build & Autenticação (Finalização)
+
+**Status:** ✅ Build Corrigido e Deploy Automatizado  
+**Data:** 31 de Março de 2026 (00:15h)  
+**Ações Realizadas:**
+
+### **9.1 Desafios de Autenticação Railway CLI**
+Durante a tentativa de deploy via terminal no Windows/WSL, encontramos dois grandes obstáculos:
+1.  **Corrupção de UI no Terminal**: O CLI da Railway tentava renderizar animações de carregamento sobrepondo os links de login, impossibilitando a captura da URL.
+2.  **Account Tokens vs Project Tokens**: Novas contas Railway possuem restrições severas de API para tokens gerados manualmente via dashboard. Tentativas de login via Token resultaram em `Unauthorized` devido a essas travas de segurança de contas recém-criadas.
+
+### **9.2 Teste de Estresse de Infraestrutura (O experimento `dneuroai`)**
+O Arquiteto realizou um teste deliberado e bem-sucedido: alternou o repositório de deploy para um projeto secundário (`dneuroai`).
+- **Resultado**: O deploy funcionou perfeitamente, provando que a **conta da Railway e a conexão com o GitHub estavam íntegras**.
+- **Conclusão**: O erro era específico da base de código do Condo-Manager, não da plataforma.
+
+### **9.3 Resolução do Erro Fatal "PORT environment variable"**
+**Erro:** O build do Docker falhava no estágio `pnpm run build` com a mensagem:
+`Error: PORT environment variable is required but was not provided.`
+
+**Causa Raiz:**
+As configurações do Vite (`vite.config.ts`) no `conserje` e no `mockup-sandbox` possuíam um check rígido (throw error) para as variáveis `PORT` e `BASE_PATH`. No Dockerfile, durante a compilação (Stage 1), essas variáveis não existem (só existem no runtime do Stage 2).
+
+**Correção Aplicada (Commit `63d0b2e`):**
+- Modificação dos arquivos `vite.config.ts` para tornar as variáveis opcionais.
+- Adição de valores padrão (`5173` para porta e `/` para base path) durante o build.
+- Flexibilização das regras de validação para permitir compilação "limpa" em ambientes de CI/CD.
+
+### **9.4 Status Final de Deployment**
+O projeto agora opera sob um modelo de **CI/CD Puro (Push-to-Deploy)**. Qualquer alteração enviada para o GitHub iniciará o build automaticamente na Railway, sem necessidade de intervenção manual via terminal ou tokens.
+
+---
+
 **Fim do Relatório.**
