@@ -377,7 +377,14 @@ As configurações do Vite (`vite.config.ts`) no `conserje` e no `mockup-sandbox
 - Adição de valores padrão (`5173` para porta e `/` para base path) durante o build.
 - Flexibilização das regras de validação para permitir compilação "limpa" em ambientes de CI/CD.
 
-### **9.4 Status Final de Deployment**
+### **9.4 Ocultação de Artefatos de Desenvolvimento (A Otimização Final)**
+Para garantir um build de produção 100% blindado contra erros de ambiente, aplicamos uma estratégia de **exclusão seletiva no Monorepo** (Commit `47e7e8f`):
+- **O Problema**: O `mockup-sandbox` é uma ferramenta de desenvolvimento local que exige variávis estritas de runtime já na fase de build, travando a esteira no Docker.
+- **A Solução**: Alteração do script de build central no `package.json` para:
+  `pnpm run typecheck && pnpm -r --filter "!@workspace/mockup-sandbox" --if-present run build`
+- **Resultado**: O build de produção agora ignora o sandbox de testes, focando exclusivamente no `api-server` e no `conserje`, reduzindo o tempo de build e eliminando a necessidade de variáveis de ambiente no estágio zero.
+
+### **9.5 Status Final de Deployment**
 O projeto agora opera sob um modelo de **CI/CD Puro (Push-to-Deploy)**. Qualquer alteração enviada para o GitHub iniciará o build automaticamente na Railway, sem necessidade de intervenção manual via terminal ou tokens.
 
 ---

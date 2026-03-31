@@ -9,6 +9,7 @@
 ## 📊 GIT COMMITS REGISTRADOS
 
 ```
+47e7e8f ← 🚀 build: exclude mockup-sandbox from production build (Fix PORT Error)
 63d0b2e ← 🚀 fix(deploy): make PORT and BASE_PATH optional during build (Correction for Railway failure)
 9ee1315 ← 🚀 fix(deploy): stable docker build configs (Resolução Exit Code 1)
 848e4d4 ← 📊 Executive summary (visão geral)

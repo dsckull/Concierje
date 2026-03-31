@@ -4,9 +4,10 @@
 
 ## 📊 O QUE FOI REALIZADO
 
-### ✅ **8 Commits Git com Histórico Completo**
+### ✅ **9 Commits Git com Histórico Completo**
 
 ```
+47e7e8f → 🚀 build: Excluir mockup-sandbox do build de produção (Fix PORT failure)
 63d0b2e → 🚀 fix(deploy): Tornar PORT e BASE_PATH opcionais no build do Vite
 9ee1315 → 🚀 fix(deploy): Correção docker exit code 1 e sincronia pnpm-lock
 eb4799e → 📝 Atualizar relatório técnico (meta-documentação)
@@ -210,9 +211,9 @@ Cada decisão tem **explicação de COMO e POR QUÊ**:
 
 ## 🎉 STATUS FINAL (30/03 — Noite)
 
-✅ **Production Build Patched via Git**
+✅ **Production Build Patched & Optimized via Git**
 - Sucesso na correção do erro "Error: PORT environment variable is required" que travava o Docker.
-- Vite configs agora suportam build sem variáveis de ambiente injetadas no estágio de compilação.
+- Estratégia de Build: O workspace `@workspace/mockup-sandbox` foi EXCLUÍDO do build de produção via `--filter`, economizando tempo e evitando dependências de ambiente desnecessárias.
 - Projeto pronto para rodar na nova conta Railway com o token f93cc8d9...
 - Validação automática implementada
 - Guias completos para Railway e Render
