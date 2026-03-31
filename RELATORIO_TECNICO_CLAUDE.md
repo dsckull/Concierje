@@ -372,10 +372,10 @@ O Arquiteto realizou um teste deliberado e bem-sucedido: alternou o repositório
 **Causa Raiz:**
 As configurações do Vite (`vite.config.ts`) no `conserje` e no `mockup-sandbox` possuíam um check rígido (throw error) para as variáveis `PORT` e `BASE_PATH`. No Dockerfile, durante a compilação (Stage 1), essas variáveis não existem (só existem no runtime do Stage 2).
 
-**Correção Aplicada (Commit `63d0b2e`):**
-- Modificação dos arquivos `vite.config.ts` para tornar as variáveis opcionais.
-- Adição de valores padrão (`5173` para porta e `/` para base path) durante o build.
-- Flexibilização das regras de validação para permitir compilação "limpa" em ambientes de CI/CD.
+**Correção Aplicada (Commit `f9e3bdb`):**
+- Atualizado `Dockerfile` para definir variáveis de ambiente de build (`NODE_ENV=production`, `PORT=5000`, `BASE_PATH=/`) durante o estágio de build e usar filtros de workspace.
+- Alterado o comando de build para compilar apenas `artifacts/api-server` e `artifacts/conserje`, evitando que workspaces de desenvolvimento (ex.: `mockup-sandbox`) executem seus builds Vite no pipeline de produção.
+- Resultado: elimina o erro `PORT environment variable is required` durante `pnpm run build` no Docker, reduzindo o tempo de build e tornando o pipeline mais resiliente.
 
 ### **9.4 Ocultação de Artefatos de Desenvolvimento (A Otimização Final)**
 Para garantir um build de produção 100% blindado contra erros de ambiente, aplicamos uma estratégia de **exclusão seletiva no Monorepo** (Commit `47e7e8f`):
