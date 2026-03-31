@@ -328,3 +328,25 @@ A integração primária de webhooks via *Telegram Bot + n8n* deve seguir o arqu
 - **Status:** Criado arquivo `iniciar_conserje.bat` na raiz do projeto.
 - **Função:** Com um duplo-clique, ele sobe ambos os servidores (`api-server` na 5000 e `conserje` na 5173) silenciosamente e automaticamente abre a interface UI no navegador padrão (`http://localhost:5173`).
 - **Objetivo:** Facilitar a vida do administrador ou síndico não-técnico para rodar o sistema localmente num piscar de olhos, sem a necessidade de abrir múltiplos terminais VS Code.
+
+---
+
+## 🚀 8. Sessão 30/03 — Noite: Deploy Railway (Homologação de Produção)
+
+**Status:** ✅ Sincronizado e Configurado  
+**Data:** 30 de Março de 2026  
+**Ações Realizadas:**
+1.  **Arquitetura Monolítica**: Unificação total do Frontend e Backend em uma única imagem Docker para o Railway.
+2.  **Sincronização Final**: Commits das correções de roteamento (SPA Fallback) e compatibilidade de ambiente (Pooler IPv4).
+3.  **Configuração de Ambiente**: Preparação da `.env.example` com o template correto para o Railway Dashboard.
+
+**Configurações de Produção:**
+*   **Container**: Alpine 3.19 + Node 22 (Otimizado).
+*   **Porta**: 5000 (Exposta pelo Railway).
+*   **Database**: Supabase IPv4 Pooler (Porta 6543).
+
+**Próxima Etapa Operacional**: Monitoramento via Railway Dashboard e atualização dos Webhooks no n8n para a nova URL de produção.
+
+---
+
+**Fim do Relatório.**

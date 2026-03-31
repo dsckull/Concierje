@@ -16,6 +16,7 @@ eb4799e ← 📝 Relatório técnico atualizado (seção 4)
 151afbc ← 🌐 Frontend serving em Express (app.ts)
 dc8919c ← 🔐 Template de variáveis (.env.example)
 3e2ebf9 ← 🐳 Dockerfile multi-stage (infraestrutura)
+🚀 NEW  ← Prep for Production: Optimized Docker + Doc Updates (Sessão 8)
 ```
 
 **Branch**: main  
