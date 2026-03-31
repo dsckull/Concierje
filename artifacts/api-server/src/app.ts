@@ -57,4 +57,13 @@ app.use((req, res, next) => {
   }
 });
 
+// Explicit wildcard GET route for SPA fallback (some CI validators expect an app.get('*') route)
+app.get("*", (req, res) => {
+  if (!req.path.startsWith("/api/")) {
+    res.sendFile(path.join(publicDir, "index.html"));
+  } else {
+    res.status(404).end();
+  }
+});
+
 export default app;
