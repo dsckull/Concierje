@@ -18,11 +18,21 @@ COPY artifacts ./artifacts
 COPY lib ./lib
 COPY scripts ./scripts
 
-# Install dependencies
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies (deterministic)
+RUN pnpm install --frozen-lockfile
 
-# Build all packages (typecheck + compillation)
-RUN pnpm run build
+# Provide sane defaults for build-time environment variables so Vite configs
+# that require `PORT` or `BASE_PATH` do not throw during image build.
+# Also set NODE_ENV=production to keep build optimized.
+ENV NODE_ENV=production
+ENV PORT=5000
+ENV BASE_PATH=/
+
+# Build only the necessary workspaces (backend + frontend). This avoids
+# failing the production build when optional dev-only packages (like
+# `mockup-sandbox`) require extra runtime envs during their Vite build.
+# Using workspace filters reduces build time and fixes the reported error.
+RUN pnpm -r --filter "./artifacts/api-server" --filter "./artifacts/conserje" --if-present run build
 
 # ──────────────────────────────────────────────────────────────
 # Production Stage
